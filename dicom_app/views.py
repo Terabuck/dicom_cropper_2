@@ -326,6 +326,9 @@ def create_polygon_mask(width, height, points):
     draw.polygon(polygon_points, outline=1, fill=1)
     return np.array(img)
 
+def index(request):
+    return render(request, 'dicom_app/index.html')
+
 def upload_dicom(request):
     if request.method == 'POST':
         form = DicomUploadForm(request.POST, request.FILES)
