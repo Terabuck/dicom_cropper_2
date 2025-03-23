@@ -1,0 +1,134 @@
+/* General styles */
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+header, footer {
+    background-color: #333;
+    color: white;
+    text-align: center;
+    padding: 1em;
+}
+
+nav {
+    background-color: #444;
+    color: white;
+    padding: 1em;
+}
+
+nav ul {
+    list-style: none;
+    padding: 0;
+}
+
+nav ul li {
+    margin: 1em 0;
+}
+
+nav ul li a {
+    color: white;
+    text-decoration: none;
+}
+
+main {
+    flex: 1;
+    padding: 2em;
+}
+
+/* Responsive layout */
+@media (min-width: 600px) {
+    body {
+        flex-direction: row;
+    }
+
+    nav {
+        min-width: 200px;
+    }
+
+    main {
+        flex: 1;
+    }
+}
+
+/* Dark theme styles */
+body.dark-theme {
+    background-color: #121212;
+    color: #e0e0e0;
+}
+
+header.dark-theme, footer.dark-theme, nav.dark-theme {
+    background-color: #1f1f1f;
+    color: #e0e0e0;
+}
+
+nav.dark-theme ul li a {
+    color: #e0e0e0;
+}
+
+.cornerstone-element-wrapper {
+    width: 100%;
+    max-width: 512px;
+    /* Adjust as needed */
+    aspect-ratio: 1 / 1;
+    /* Ensures a square ratio */
+    border: 1px solid black;
+    }
+    
+    .cornerstone-element {
+    width: 100%;
+    height: 100%;
+    }
+    
+    #croppedDicomElement {
+    width: 512px;
+    height: 512px;
+    border: 2px solid #00ff00;
+    margin-top: 20px;
+    }
+    
+    #downloadButton {
+    background-color: #4CAF50;
+    /* Green */
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-top: 10px;
+    transition: background-color 0.3s;
+    }
+    
+    #downloadButton:hover {
+    background-color: #45a049;
+    }
+    
+    #downloadButton:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+    }
+    
+    /* Style for the options section */
+    .options-section {
+    margin-top: 15px;
+    margin-bottom: 15px;
+    }
+    
+    .options-section label {
+    margin-right: 15px;
+    display: inline-flex;
+    align-items: center;
+    }
+    
+    .options-section input[type="checkbox"] {
+    margin-right: 5px;
+    }
+    
+    /* Better styling for button area */
+    .action-buttons {
+    margin-top: 15px;
+    }
