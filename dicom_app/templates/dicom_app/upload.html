@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Upload DICOM File</title>
+</head>
+
+
+<h1>Upload DICOM File or Select Folder</h1>
+
+<h1>Upload DICOM File</h1>
+<form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Upload</button>
+</form>
+
+
+<form method="post">
+    {% csrf_token %}
+    
+    <!-- Folder selection for DICOM files -->
+    <h2>Select Folder Containing DICOM Files</h2>
+    {{ folder_form.as_p }}
+    <button type="button" onclick="openFolderDialog()">Browse</button>
+    <button type="submit" name="upload_folder">Upload Folder</button>
+</form>
+
+{% if dicom_files %}
+    <h2>Found DICOM Files:</h2>
+    <ul>
+        {% for file in dicom_files %}
+            <li>{{ file }}</li>
+        {% endfor %}
+    </ul>
+{% endif %}
+
+<script>
+function openFolderDialog() {
+    var input = document.createElement('input');
+    input.type = 'file';
+    input.webkitdirectory = true;
+    input.directory = true;
+    input.onchange = function(event) {
+        document.getElementById('id_folder_path').value = event.target.files[0].webkitRelativePath.split('/')[0];
+    };
+    input.click();
+}
+</script>

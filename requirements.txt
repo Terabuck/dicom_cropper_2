@@ -1,0 +1,6 @@
+django==4.2.7
+pydicom==2.4.3
+pillow==10.0.1
+django-cors-headers==4.2.0
+matplotlib==3.7.2
+numpy==1.24.3
