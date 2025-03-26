@@ -3,6 +3,7 @@ from .views import index, upload_dicom, serve_dicom_file, crop_dicom, clear_outp
 
 urlpatterns = [
     path('', index, name='index'),
+    path('index/', index, name='index'),
     path('upload/', upload_dicom, name='upload_dicom'),
     path('dicom-upload/', dicom_upload_view, name='dicom-upload'),
     path('dicom/<str:filename>/', serve_dicom_file, name='serve_dicom_file'),

@@ -1,0 +1,8 @@
+HI Deep! I uploaded my project to GitHub at https://github.com/Terabuck/dicom_cropper_2
+I would like to:
+1. make the app adaptive -without jQuery, please-
+2. the Cornerstone elements -the original and the cropped- are side by side. I want to keep this stting while the device screen is in landscape mode, but when it is rotated to portrait, the original image should be above and the cropped one should be below.
+Can you please help me, step by step, so that we can test the modifications and move on?
+
+2. apply a Dark Theme to this repo. It actually works with the index.html page only
+3. create a menu-command bar at the leftmost part of the screen, and
