@@ -24,55 +24,63 @@
     <script src="/static/assets/cornerstone-wado-image-loader.js"></script>
     <script src="/static/assets/cornerstone-tools.js"></script>
     <style>
-      /* New styles for side-by-side layout */
-      .image-container {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 20px;
-        /* Add some space between the elements */
-        width: 100vw;
-        justify-content: center;
-        align-items: center;
+      body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 5px;
       }
 
-      .image-wrapper {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        height: 50vh;
+      .tool-selection {
+        margin-top: 5px;
+        margin-bottom: 5px;
       }
 
-      .image-wrapper img {
+      .cornerstone-element-wrapper {
         width: 100%;
-        height: auto;
-        object-fit: contain;
-        max-width: 100%;
-        max-height: 100%;
+        border: 1px;
         /* Adjust as needed */
         aspect-ratio: 1 / 1;
         /* Ensures a square ratio */
         border: 1px solid black;
       }
 
+      /* New styles for side-by-side layout */
+      .dicom-container {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        /* Use flexbox for side-by-side layout */
+        gap: 3px;
+        /* Add some space between the elements */
+        width: fit-content;
+        justify-content: center;
+        align-items: center;
+      }
+
+      .cornerstone-element,
+      #croppedDicomElement {
+        width: 420px;
+        height: 420px;
+      }
+
+      #croppedDicomElement {
+        border: 1px solid #00ff00;
+      }
+
       @media (orientation: portrait) {
-        .image-container {
+        .dicom-container {
           grid-template-columns: 1fr;
         }
       }
+
+        .menu-container {
+          border: 1px black;
+          width: 851px;
+          background-color: grey;
+        }
 
       @media (max-width: 768px) {
-        .image-container {
+        .dicom-container {
           grid-template-columns: 1fr;
-        }
-
-        .image-wrapper {
-          height: 40vh;
-        }
-      }
-
-      @media (max-width: 1024px) {
-        .image-wrapper {
-          height: 45vh;
         }
       }
 
@@ -100,8 +108,8 @@
 
       /* Style for the options section */
       .options-section {
-        margin-top: 15px;
-        margin-bottom: 15px;
+        margin-top: 5px;
+        margin-bottom: 5px;
       }
 
       .options-section label {
@@ -126,126 +134,128 @@
       <div class="wrapper">
         <section class="section">
           <div class="container">
-            <!-- Tool Selection Radio Buttons -->
-            <div class="tool-selection">
-              <label>
-                <input type="radio" name="toolType" value="RectangleRoi" checked> Rectangle Selection </label>
-              <label style="margin-left: 20px;">
-                <input type="radio" name="toolType" value="FreehandRoi"> Freehand Selection </label>
-            </div>
-            <!-- Mask Options with Invert Checkbox -->
-            <div class="options-section">
-              <label>
-                <input type="checkbox" id="invertMask"> Invert mask </label>
-              <span id="maskInfo" style="margin-left: 10px; font-size: 0.9em; color: #666;"> (Default: mask outside the selection) </span>
-            </div>
-            <div class="buttons mode-buttons">
-              <button class="button set-tool-mode is-primary" data-action="Active"> Active </button>
-              <button class="button set-tool-mode" data-action="Passive"> Passive </button>
-              <button class="button set-tool-mode" data-action="Enabled"> Enable </button>
-              <button class="button set-tool-mode" data-action="Disabled"> Disable </button>
-            </div>
-            <div class="action-buttons">
-              <button class="button" onclick="cropImageFromROI()"> Crop Image </button>
-            </div>
-            <!-- Download Button -->
-            <button id="downloadButton" style="display: none; margin-top: 10px; background-color: #4CAF50; color: white; padding: 10px 20px; border: none; border-radius: 4px;" onclick="handleDownload()"> Download Cropped Image </button>
-            <script>
-              window.addEventListener('resize', function() {
-                // Check if the orientation has changed
-                if (window.matchMedia("(orientation: portrait)").matches) {
-                  console.log("Portrait orientation");
-                } else {
-                  console.log("Landscape orientation");
-                }
-              });
-              // In the initModeButtons function, add console logs
-              function initModeButtons() {
-                const nameSpace = `.mode-buttons`;
-                const buttons = document.querySelectorAll(`${nameSpace} .set-tool-mode`);
-                const handleClick = function(evt) {
-                  const action = this.dataset.action;
-                  console.log(`Handling action: ${action} on tool: ${activeTool}`);
-                  const options = {
-                    mouseButtonMask: evt.buttons || convertMouseEventWhichToButtons(evt.which),
-                  };
-                  console.log(`Calling setTool${action} on ${activeTool}`);
-                  cornerstoneTools[`setTool${action}`](activeTool, options);
-                  buttons.forEach((btn) => {
-                    btn.classList.remove("is-primary");
-                  });
-                  this.classList.add("is-primary");
-                  evt.preventDefault();
-                  evt.stopPropagation();
-                  evt.stopImmediatePropagation();
-                  return false;
-                };
-                buttons.forEach((btn) => {
-                  btn.addEventListener("contextmenu", handleClick);
-                  btn.addEventListener("auxclick", handleClick);
-                  btn.addEventListener("click", handleClick);
-                });
-              }
-              // Optional: Add a function to log the current tool status
-              function logToolStatus() {
-                console.log('Current activeTool:', activeTool);
-                const state = cornerstoneTools.getToolState(document.getElementById("cornerstone-element"), activeTool);
-                console.log('Tool state:', state);
-              }
-              // Call logToolStatus periodically or on demand
-              setInterval(logToolStatus, 5000); // Log every 5 seconds
-            </script>
-            <!-- Start Over button -->
-            <button id="startOverButton" class="button" style="margin-top: 10px; background-color: #ff5252; color: white; padding: 10px 20px; border: none; border-radius: 4px;"> Start Over </button>
-            <script>
-              document.getElementById('startOverButton').addEventListener('click', function() {
-                if (confirm('This will clear all cropped images. Are you sure?')) {
-                  startOver();
-                }
-              });
-
-              function startOver() {
-                // Clear server-side outputs
-                fetch('/clear-outputs/', {
-                  method: 'POST',
-                  headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': '{{ csrf_token }}'
-                  }
-                }).then(response => response.json()).then(data => {
-                  if (data.success) {
-                    // Clear client-side display
-                    const croppedElement = document.getElementById('croppedDicomElement');
-                    if (croppedElement) {
-                      // Clear the cropped display
-                      cornerstone.disable(croppedElement);
-                      while (croppedElement.firstChild) {
-                        croppedElement.removeChild(croppedElement.firstChild);
-                      }
-                    }
-                    // Hide download button
-                    document.getElementById('downloadButton').style.display = 'none';
-                    // Reset currentCroppedUrl
-                    currentCroppedUrl = null;
-                    alert(`Cleanup complete! Deleted ${data.files_deleted} files.`);
+            <div class="menu-container">
+              <!-- Tool Selection Radio Buttons -->
+              <div class="tool-selection">
+                <label>
+                  <input type="radio" name="toolType" value="RectangleRoi" checked> Rectangle Selection </label>
+                <label style="margin-left: 20px;">
+                  <input type="radio" name="toolType" value="FreehandRoi"> Freehand Selection </label>
+              </div>
+              <!-- Mask Options with Invert Checkbox -->
+              <div class="options-section">
+                <label>
+                  <input type="checkbox" id="invertMask"> Invert mask </label>
+                <span id="maskInfo" style="margin-left: 10px; font-size: 0.9em; color: #666;"> (Default: mask outside the selection) </span>
+              </div>
+              <div class="buttons mode-buttons">
+                <button class="button set-tool-mode is-primary" data-action="Active"> Create Crop Area </button>
+                <button class="button set-tool-mode" data-action="Passive"> Edit Crop Area</button>
+                <!-- <button class="button set-tool-mode" data-action="Enabled"> Enable </button>
+                <button class="button set-tool-mode" data-action="Disabled"> Disable </button> -->
+              </div>
+              <div class="action-buttons">
+                <button class="button" onclick="cropImageFromROI()"> Crop Image </button>
+              </div>
+              <!-- Download Button -->
+              <button id="downloadButton" style="display: none; margin-top: 10px; background-color: #4CAF50; color: white; padding: 10px 20px; border: none; border-radius: 4px;" onclick="handleDownload()"> Download Cropped Image </button>
+              <script>
+                window.addEventListener('resize', function() {
+                  // Check if the orientation has changed
+                  if (window.matchMedia("(orientation: portrait)").matches) {
+                    console.log("Portrait orientation");
                   } else {
-                    alert('Error during cleanup: ' + (data.error || 'Unknown error'));
+                    console.log("Landscape orientation");
                   }
-                }).catch(error => {
-                  console.error('Cleanup failed:', error);
-                  alert('Cleanup failed: ' + error.message);
                 });
-              }
-            </script>
-            <div class="image-container" style="border: 1px">
-              <div class="image-wrapper original">
+                // In the initModeButtons function, add console logs
+                function initModeButtons() {
+                  const nameSpace = `.mode-buttons`;
+                  const buttons = document.querySelectorAll(`${nameSpace} .set-tool-mode`);
+                  const handleClick = function(evt) {
+                    const action = this.dataset.action;
+                    console.log(`Handling action: ${action} on tool: ${activeTool}`);
+                    const options = {
+                      mouseButtonMask: evt.buttons || convertMouseEventWhichToButtons(evt.which),
+                    };
+                    console.log(`Calling setTool${action} on ${activeTool}`);
+                    cornerstoneTools[`setTool${action}`](activeTool, options);
+                    buttons.forEach((btn) => {
+                      btn.classList.remove("is-primary");
+                    });
+                    this.classList.add("is-primary");
+                    evt.preventDefault();
+                    evt.stopPropagation();
+                    evt.stopImmediatePropagation();
+                    return false;
+                  };
+                  buttons.forEach((btn) => {
+                    btn.addEventListener("contextmenu", handleClick);
+                    btn.addEventListener("auxclick", handleClick);
+                    btn.addEventListener("click", handleClick);
+                  });
+                }
+                // Optional: Add a function to log the current tool status
+                function logToolStatus() {
+                  console.log('Current activeTool:', activeTool);
+                  const state = cornerstoneTools.getToolState(document.getElementById("cornerstone-element"), activeTool);
+                  console.log('Tool state:', state);
+                }
+                // Call logToolStatus periodically or on demand
+                setInterval(logToolStatus, 5000); // Log every 5 seconds
+              </script>
+              <!-- Start Over button -->
+              <button id="startOverButton" class="button" style="margin-top: 10px; background-color: #ff5252; color: white; padding: 10px 20px; border: none; border-radius: 4px;"> Start Over </button>
+              <script>
+                document.getElementById('startOverButton').addEventListener('click', function() {
+                  if (confirm('This will clear all cropped images. Are you sure?')) {
+                    startOver();
+                  }
+                });
+
+                function startOver() {
+                  // Clear server-side outputs
+                  fetch('/clear-outputs/', {
+                    method: 'POST',
+                    headers: {
+                      'Content-Type': 'application/json',
+                      'X-CSRFToken': '{{ csrf_token }}'
+                    }
+                  }).then(response => response.json()).then(data => {
+                    if (data.success) {
+                      // Clear client-side display
+                      const croppedElement = document.getElementById('croppedDicomElement');
+                      if (croppedElement) {
+                        // Clear the cropped display
+                        cornerstone.disable(croppedElement);
+                        while (croppedElement.firstChild) {
+                          croppedElement.removeChild(croppedElement.firstChild);
+                        }
+                      }
+                      // Hide download button
+                      document.getElementById('downloadButton').style.display = 'none';
+                      // Reset currentCroppedUrl
+                      currentCroppedUrl = null;
+                      alert(`Cleanup complete! Deleted ${data.files_deleted} files.`);
+                    } else {
+                      alert('Error during cleanup: ' + (data.error || 'Unknown error'));
+                    }
+                  }).catch(error => {
+                    console.error('Cleanup failed:', error);
+                    alert('Cleanup failed: ' + error.message);
+                  });
+                }
+              </script>
+            </div>
+            <div class="dicom-container">
+              <div class="cornerstone-element-wrapper original">
                 <h4>Source DICOM Image</h4>
                 <div id="cornerstone-element" class="cornerstone-element"></div>
               </div>
               <!-- Replace canvas with new cornerstone element -->
-              <div class="image-wrapper cropped">
+              <div class="cornerstone-element-wrapper cropped">
                 <h4>Cropped DICOM</h4>
-                <div id="croppedDicomElement" style="border:1px solid red"></div>
+                <div id="croppedDicomElement"></div>
               </div>
               <script>
                 // Crop function
