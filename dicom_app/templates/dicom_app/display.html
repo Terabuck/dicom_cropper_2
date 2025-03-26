@@ -28,6 +28,7 @@
         font-family: Arial, sans-serif;
         margin: 0;
         padding: 5px;
+        display: grid;
       }
 
       .tool-selection {
@@ -37,7 +38,6 @@
 
       .cornerstone-element-wrapper {
         width: 100%;
-        border: 1px;
         /* Adjust as needed */
         aspect-ratio: 1 / 1;
         /* Ensures a square ratio */
@@ -66,23 +66,29 @@
         border: 1px solid #00ff00;
       }
 
+      .menu-container {
+          border: 1px black;
+        width: 849px;
+   
+          background-color: grey;
+          padding: 1px;
+        }
+
       @media (orientation: portrait) {
         .dicom-container {
           grid-template-columns: 1fr;
         }
-      }
-
         .menu-container {
-          border: 1px black;
-          width: 851px;
-          background-color: grey;
-        }
+        width: 423px;
+      }
+      }
 
       @media (max-width: 768px) {
-        .dicom-container {
+        dicom-container {
           grid-template-columns: 1fr;
         }
-      }
+
+           }
 
       #downloadButton {
         background-color: #4CAF50;
@@ -106,6 +112,17 @@
         cursor: not-allowed;
       }
 
+      button {
+      background-color: darkgray;
+      style="margin-top: 10px; 
+      color: white; 
+      padding: 10px 20px; 
+      border: none; 
+      border-radius: 4px;
+      margin: 4px;
+      width: 200px;
+      }
+
       /* Style for the options section */
       .options-section {
         margin-top: 5px;
@@ -122,14 +139,10 @@
         margin-right: 5px;
       }
 
-      /* Better styling for button area */
-      .action-buttons {
-        margin-top: 15px;
-      }
     </style>
   </head>
   <body>
-    <h1>DICOM Viewer</h1>
+    <h2>DICOM Editor</h2>
     <main class="page-content" aria-label="Content">
       <div class="wrapper">
         <section class="section">
@@ -142,21 +155,20 @@
                 <label style="margin-left: 20px;">
                   <input type="radio" name="toolType" value="FreehandRoi"> Freehand Selection </label>
               </div>
-              <!-- Mask Options with Invert Checkbox -->
-              <div class="options-section">
-                <label>
-                  <input type="checkbox" id="invertMask"> Invert mask </label>
-                <span id="maskInfo" style="margin-left: 10px; font-size: 0.9em; color: #666;"> (Default: mask outside the selection) </span>
-              </div>
+              
               <div class="buttons mode-buttons">
                 <button class="button set-tool-mode is-primary" data-action="Active"> Create Crop Area </button>
                 <button class="button set-tool-mode" data-action="Passive"> Edit Crop Area</button>
-                <!-- <button class="button set-tool-mode" data-action="Enabled"> Enable </button>
-                <button class="button set-tool-mode" data-action="Disabled"> Disable </button> -->
-              </div>
+               </div>
               <div class="action-buttons">
                 <button class="button" onclick="cropImageFromROI()"> Crop Image </button>
-              </div>
+              
+              <!-- Mask Options with Invert Checkbox -->
+              
+                <label class="options-section">
+                  <input type="checkbox" id="invertMask"> Invert mask </label>
+              
+            </div>
               <!-- Download Button -->
               <button id="downloadButton" style="display: none; margin-top: 10px; background-color: #4CAF50; color: white; padding: 10px 20px; border: none; border-radius: 4px;" onclick="handleDownload()"> Download Cropped Image </button>
               <script>
@@ -205,7 +217,7 @@
                 setInterval(logToolStatus, 5000); // Log every 5 seconds
               </script>
               <!-- Start Over button -->
-              <button id="startOverButton" class="button" style="margin-top: 10px; background-color: #ff5252; color: white; padding: 10px 20px; border: none; border-radius: 4px;"> Start Over </button>
+              <button id="startOverButton" class="button"> Start Over </button>
               <script>
                 document.getElementById('startOverButton').addEventListener('click', function() {
                   if (confirm('This will clear all cropped images. Are you sure?')) {
