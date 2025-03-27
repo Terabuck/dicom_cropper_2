@@ -222,19 +222,29 @@
                 }
                 // Display cropped image
                 function displayCroppedDicom(imageUrl) {
-                  const element = document.getElementById('croppedDicomElement');
-                  cornerstone.enable(element);
-                  currentCroppedUrl = imageUrl;
-                  const imageId = `wadouri:http://localhost:8000${imageUrl}`;
-                  cornerstone.loadImage(imageId).then(image => {
-                    cornerstone.displayImage(element, image);
-                    cornerstone.resize(element, true);
-                    document.getElementById('downloadButton').style.display = 'inline-block';
-                  }).catch(error => {
-                    console.error('Error loading cropped image:', error);
-                    alert('Failed to load cropped DICOM!');
-                  });
-                }
+    const element = document.getElementById('croppedDicomElement');
+    cornerstone.enable(element);
+    currentCroppedUrl = imageUrl;
+
+    const imageId = `wadouri:http://localhost:8000${imageUrl}`;
+
+    cornerstone.loadImage(imageId).then(image => {
+        // Reset viewport to center the content
+        const viewport = cornerstone.getDefaultViewportForImage(element, image);
+        viewport.voi.windowWidth = image.windowWidth;
+        viewport.voi.windowCenter = image.windowCenter;
+        viewport.scale = 1;
+        viewport.translation.x = 0;
+        viewport.translation.y = 0;
+
+        cornerstone.displayImage(element, image, viewport);
+        cornerstone.resize(element, true);
+        document.getElementById('downloadButton').style.display = 'inline-block';
+    }).catch(error => {
+        console.error('Error loading cropped image:', error);
+        alert('Failed to load cropped DICOM!');
+    });
+}
               </script>
             </div>
           </div>

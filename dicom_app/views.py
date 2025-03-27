@@ -420,6 +420,11 @@ def crop_dicom(request):
             try:
                 ds = pydicom.dcmread(original_dicom_path)
                 dicom_info = get_dicom_info(ds)
+                # begin center tryout
+                pixel_array = ds.pixel_array
+                original_rows = ds.Rows
+                original_columns = ds.Columns
+                # end center tryout
                 logger.info(f"Original DICOM info: {dicom_info}")
                 
                 # Try to access pixel data
@@ -471,7 +476,7 @@ def crop_dicom(request):
             pixel_min, pixel_max = np.min(pixel_array), np.max(pixel_array)
             logger.info(f"Pixel value range: {pixel_min} to {pixel_max}")
             
-            max_pixel_value = np.max(pixel_array)
+            mask_value = np.max(pixel_array)
             
             if selection_type == 'rect':
                 # Handle rectangle
@@ -483,7 +488,32 @@ def crop_dicom(request):
                 y1 = max(0, int(data['y1']))
                 x2 = min(int(data['x2']), ds.Columns)
                 y2 = min(int(data['y2']), ds.Rows)
-                
+
+                # begin center tryout
+                cropped_region = pixel_array[y1:y2, x1:x2]
+                cropped_height, cropped_width = cropped_region.shape
+
+                # Create centered array with original dimensions
+                centered_array = np.zeros((original_rows, original_columns), dtype=pixel_array.dtype)
+                start_y = (original_rows - cropped_height) // 2
+                start_x = (original_columns - cropped_width) // 2
+                end_y = start_y + cropped_height
+                end_x = start_x + cropped_width
+
+                # Ensure bounds
+                start_y = max(0, start_y)
+                start_x = max(0, start_x)
+                end_y = min(original_rows, end_y)
+                end_x = min(original_columns, end_x)
+
+                centered_array[start_y:end_y, start_x:end_x] = cropped_region
+                ds.PixelData = centered_array.tobytes()
+
+                # Maintain original dimensions
+                ds.Rows = original_rows
+                ds.Columns = original_columns
+                # end center tryout
+
                 logger.info(f"Rectangle coordinates: ({x1}, {y1}) to ({x2}, {y2})")
                 
                 # Create a copy of the pixel array to modify
@@ -493,34 +523,23 @@ def crop_dicom(request):
                 # Apply mask to the OUTSIDE of the rectangle
                 if mask_color == 'black':
                     logger.info("Applying black mask outside rectangle")
-                    # Set everything outside the rectangle to black (0)
-                    # Top portion
-                    if y1 > 0:
-                        masked_array[0:y1, :] = 0
-                    # Bottom portion
-                    if y2 < ds.Rows:
-                        masked_array[y2:, :] = 0
-                    # Left portion (within the height of the rectangle)
-                    if x1 > 0:
-                        masked_array[y1:y2, 0:x1] = 0
-                    # Right portion (within the height of the rectangle)
-                    if x2 < ds.Columns:
-                        masked_array[y1:y2, x2:] = 0
+                    mask_value = 0                    
                 else:
                     logger.info("Applying white mask outside rectangle")
                     # Set everything outside the rectangle to white (max value)
-                    # Top portion
-                    if y1 > 0:
-                        masked_array[0:y1, :] = max_pixel_value
-                    # Bottom portion
-                    if y2 < ds.Rows:
-                        masked_array[y2:, :] = max_pixel_value
-                    # Left portion (within the height of the rectangle)
-                    if x1 > 0:
-                        masked_array[y1:y2, 0:x1] = max_pixel_value
-                    # Right portion (within the height of the rectangle)
-                    if x2 < ds.Columns:
-                        masked_array[y1:y2, x2:] = max_pixel_value
+                
+                # Top portion
+                if y1 > 0:
+                    masked_array[0:y1, :] = mask_value
+                # Bottom portion
+                if y2 < ds.Rows:
+                    masked_array[y2:, :] = mask_value
+                # Left portion (within the height of the rectangle)
+                if x1 > 0:
+                    masked_array[y1:y2, 0:x1] = mask_value
+                # Right portion (within the height of the rectangle)
+                if x2 < ds.Columns:
+                    masked_array[y1:y2, x2:] = mask_value
                 
             else:
                 # Handle polygon
