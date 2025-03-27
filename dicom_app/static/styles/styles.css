@@ -4,6 +4,16 @@ body {
     padding: 5px;
     display: grid;
 }
+.dicom-viewer-section {
+    margin-top: 2rem;
+    transition: opacity 0.3s ease;
+}
+
+.file-input:focus + .file-cta {
+    border-color: #485fc7;
+    box-shadow: 0 0 0 0.125em rgba(72, 95, 199, 0.25);
+}
+
 .tool-selection {
     margin-top: 5px;
     margin-bottom: 5px;

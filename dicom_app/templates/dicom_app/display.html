@@ -16,6 +16,8 @@
     <meta name="msapplication-TileColor" content="#da532c" />
     <meta name="theme-color" content="#ffffff" />
     <link rel="stylesheet" href="/static/styles/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+
     <!-- Local versions of libraries -->
     <script src="/static/assets/hammer.js"></script>
     <script src="/static/assets/dicom-parser.js"></script>
@@ -32,6 +34,37 @@
           <div class="container">
             <div class="menu-container">
               <h2>DICOM Editor</h2>
+                  <!-- Upload Section -->
+    <section class="section">
+      <div class="container">
+          
+          <!-- Upload Form -->
+          <div class="box" style="margin-bottom: 2rem;">
+              <form method="post" enctype="multipart/form-data" action="{% url 'upload_dicom' %}">
+                  {% csrf_token %}
+                  <div class="field">
+                      <div class="file has-name is-boxed">
+                          <label class="file-label">
+                              <input class="file-input" type="file" name="dicom_file" accept=".dcm">
+                              
+                          </label>
+                      </div>
+                  </div>
+                  <div class="field">
+                      <button type="submit" class="button is-primary">Upload &amp; View</button>
+                  </div>
+              </form>
+          </div>
+
+          <!-- Existing DICOM Viewer Content -->
+          {% if dicom_file_url %}
+          <div class="dicom-viewer-section">
+              <!-- Existing mode buttons, cornerstone element, and tools -->
+              <!-- ... (keep all your existing viewer content here) ... -->
+          </div>
+          {% endif %}
+      </div>
+  </section>
               <!-- Tool Selection Radio Buttons -->
               <div class="tool-selection">
                 <label>
@@ -64,6 +97,16 @@
                     console.log("Landscape orientation");
                   }
                 });
+                        // Add file name display functionality
+        const fileInput = document.querySelector('.file-input');
+        const fileName = document.querySelector('.file-name');
+        
+        fileInput.onchange = () => {
+            if (fileInput.files.length > 0) {
+                fileName.textContent = fileInput.files[0].name;
+            }
+        };
+
                 // In the initModeButtons function, add console logs
                 function initModeButtons() {
                   const nameSpace = `.mode-buttons`;
