@@ -1,0 +1,161 @@
+              </script>
+            </div>
+            <div class="dicom-container">
+              <div class="cornerstone-element-wrapper original">
+                <h4>Source DICOM Image</h4>
+                <div id="cornerstone-element" class="cornerstone-element"></div>
+              </div>
+              <!-- Replace canvas with new cornerstone element -->
+              <div class="cornerstone-element-wrapper cropped">
+                <h4>Cropped DICOM</h4>
+                <div id="croppedDicomElement"></div>
+              </div>
+              <script>
+                // Center Cropped Image
+                function centerCropArea(element) {
+    const tool = cornerstoneTools.getTool('rectangle');
+    const toolState = cornerstoneTools.getToolState(tool);
+    const enabledElement = cornerstone.getEnabledElement(element);
+    const imageId = enabledElement.imageId;
+    const image = cornerstone.getImage(imageId);
+    
+    if (!image) {
+        console.error('No image loaded');
+        return;
+    }
+
+    if (!toolState.data[enabledElement.id] || toolState.data[enabledElement.id].length === 0) {
+        console.log('No crop area defined');
+        return;
+    }
+
+    const cropAreas = toolState.data[enabledElement.id];
+    
+    // Loop through each crop area
+    const centeredCropAreas = cropAreas.map(cropArea => {
+        const imageWidth = image.columns;
+        const imageHeight = image.rows;
+
+        // Calculate the center of the image
+        const imageCenterX = imageWidth / 2;
+        const imageCenterY = imageHeight / 2;
+
+        // Calculate the center of the crop area
+        const cropCenterX = cropArea.x + (cropArea.width / 2);
+        const cropCenterY = cropArea.y + (cropArea.height / 2);
+
+        // Calculate the adjustment needed to center the crop area
+        const deltaX = imageCenterX - cropCenterX;
+        const deltaY = imageCenterY - cropCenterY;
+
+        // Create a new crop area with adjusted position
+        const newCropArea = {
+            ...cropArea,
+            x: cropArea.x + deltaX,
+            y: cropArea.y + deltaY,
+        };
+
+        // Ensure the new crop area stays within the image boundaries
+        newCropArea.x = Math.max(newCropArea.x, 0);
+        newCropArea.y = Math.max(newCropArea.y, 0);
+        newCropArea.x = Math.min(newCropArea.x, imageWidth - newCropArea.width);
+        newCropArea.y = Math.min(newCropArea.y, imageHeight - newCropArea.height);
+
+        return newCropArea;
+    });
+
+    // Update the tool state with centered crop areas
+    toolState.data[enabledElement.id] = centeredCropAreas;
+    cornerstoneTools.setToolState(tool, enabledElement, toolState.data[enabledElement.id]);
+
+    // Trigger a redraw
+    cornerstone.updateImage(element);
+}
+
+// Add event listener to run centerCropArea after user interaction
+cornerstoneTools.addEventListener('CornerstoneToolsMouseUpActivePoint', (event) => {
+    const { element } = event.detail;
+    centerCropArea(element);
+});
+                // Crop function
+                async function cropImageFromROI() {
+                  const element = document.getElementById("cornerstone-element");
+                  const toolType = document.querySelector('input[name="toolType"]:checked').value;
+                  const toolName = toolType === 'RectangleRoi' ? RECT_TOOL : FREE_TOOL;
+                  const invertMask = document.getElementById('invertMask').checked;
+                  // The server still expects 'black' or 'white', so we'll continue using those terms
+                  // but translate from the invert checkbox. Default (non-inverted) is black mask
+                  const maskColor = invertMask ? 'white' : 'black';
+                  const toolState = cornerstoneTools.getToolState(element, toolName);
+                  if (!toolState?.data?.length) {
+                    alert("Please draw a selection first!");
+                    return;
+                  }
+                  const roi = toolState.data[0];
+                  let requestBody;
+                  if (toolType === 'RectangleRoi') {
+                    requestBody = {
+                      x1: Math.floor(roi.handles.start.x),
+                      y1: Math.floor(roi.handles.start.y),
+                      x2: Math.floor(roi.handles.end.x),
+                      y2: Math.floor(roi.handles.end.y),
+                      maskColor: maskColor // Still send maskColor to maintain compatibility
+                    };
+                  } else { // Freehand
+                    if (roi.handles.points.length < 3) {
+                      alert("Freehand requires at least 3 points!");
+                      return;
+                    }
+                    requestBody = {
+                      type: 'free',
+                      points: roi.handles.points.map(p => ({
+                        x: Math.floor(p.x),
+                        y: Math.floor(p.y)
+                      })),
+                      maskColor: maskColor // Still send maskColor to maintain compatibility
+                    };
+                  }
+                  try {
+                    const response = await fetch('/crop/', {
+                      method: 'POST',
+                      headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': '{{ csrf_token }}'
+                      },
+                      body: JSON.stringify(requestBody)
+                    });
+                    // Clone the response to read it multiple times
+                    const responseClone = response.clone();
+                    // Log the response for debugging
+                    console.log('Response status:', response.status);
+                    console.log('Response data:', await responseClone.json());
+                    if (!response.ok) {
+                      const errorText = await response.text();
+                      throw new Error(`Server error: ${response.status} - ${errorText}`);
+                    }
+                    const data = await response.json();
+                    if (data.cropped_url) {
+                      displayCroppedDicom(data.cropped_url);
+                      alert('Cropping successful! Displaying result...');
+                    }
+                  } catch (error) {
+                    console.error('Full error:', error);
+                    alert(`Cropping failed: ${error.message}`);
+                  }
+                }
+                // Display cropped image
+                function displayCroppedDicom(imageUrl) {
+                  const element = document.getElementById('croppedDicomElement');
+                  cornerstone.enable(element);
+                  currentCroppedUrl = imageUrl;
+                  const imageId = `wadouri:http://localhost:8000${imageUrl}`;
+                  cornerstone.loadImage(imageId).then(image => {
+                    cornerstone.displayImage(element, image);
+                    cornerstone.resize(element, true);
+                    document.getElementById('downloadButton').style.display = 'inline-block';
+                  }).catch(error => {
+                    console.error('Error loading cropped image:', error);
+                    alert('Failed to load cropped DICOM!');
+                  });
+                }
+              </script>

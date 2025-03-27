@@ -1,3 +1,114 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 5px;
+    display: grid;
+}
+.tool-selection {
+    margin-top: 5px;
+    margin-bottom: 5px;
+}
+.cornerstone-element-wrapper {
+    width: 100%;
+   /* Adjust as needed */
+    aspect-ratio: 1 / 1;
+   /* Ensures a square ratio */
+    border: 1px solid black;
+}
+/* New styles for side-by-side layout */
+.dicom-container {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+   /* Use flexbox for side-by-side layout */
+    gap: 3px;
+   /* Add some space between the elements */
+    width: fit-content;
+    justify-content: center;
+    align-items: center;
+}
+.cornerstone-element, #croppedDicomElement {
+    width: 420px;
+    height: 420px;
+}
+#croppedDicomElement {
+    border: 1px solid #00ff00;
+}
+.menu-container {
+    border: 1px black;
+    width: 1028px;
+    background-color: grey;
+    padding: 1px;
+}
+@media (orientation: portrait) {
+    .dicom-container {
+        grid-template-columns: 1fr;
+   }
+}
+@media (max-width: 768px) {
+    dicom-container {
+        grid-template-columns: 1fr;
+   }
+}
+@media (orientation: portrait) {
+    .menu-container {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        z-index: 1000;
+        background-color: rgba(255, 255, 255, 0.9);
+        padding: 10px;
+        box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1);
+        width: 410px;
+   }
+   /* Optional: Add padding to body to prevent content from being hidden */
+    body {
+        padding-bottom: 60px;
+       /* Adjust based on menu height */
+   }
+}
+#downloadButton {
+    background-color: #4CAF50;
+   /* Green */
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-top: 10px;
+    transition: background-color 0.3s;
+    position: relative;
+}
+#downloadButton:hover {
+    background-color: #45a049;
+}
+#downloadButton:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+}
+button {
+    background-color: darkgray;
+    style="margin-top: 10px;
+    color: white;
+    padding: 4px;
+    border: none;
+    border-radius: 4px;
+    margin: 4px;
+    width: 185px;
+}
+/* Style for the options section */
+.options-section {
+    margin-top: 5px;
+    margin-bottom: 5px;
+}
+.options-section label {
+    margin-right: 15px;
+    display: inline-flex;
+    align-items: center;
+}
+.options-section input[type="checkbox"] {
+    margin-right: 5px;
+}
 /* General styles */
 body {
     font-family: Arial, sans-serif;
@@ -7,93 +118,78 @@ body {
     flex-direction: column;
     min-height: 100vh;
 }
-
 header, footer {
     background-color: #333;
     color: white;
     text-align: center;
     padding: 1em;
 }
-
 nav {
     background-color: #444;
     color: white;
     padding: 1em;
 }
-
 nav ul {
     list-style: none;
     padding: 0;
 }
-
 nav ul li {
     margin: 1em 0;
 }
-
 nav ul li a {
     color: white;
     text-decoration: none;
 }
-
 main {
     flex: 1;
-    padding: 2em;
+    padding: 5px;
 }
-
 /* Responsive layout */
 @media (min-width: 600px) {
     body {
         flex-direction: row;
-    }
-
+   }
     nav {
         min-width: 200px;
-    }
-
+   }
     main {
         flex: 1;
-    }
+   }
 }
-
 /* Dark theme styles */
 body.dark-theme {
     background-color: #121212;
     color: #e0e0e0;
 }
-
 header.dark-theme, footer.dark-theme, nav.dark-theme {
     background-color: #1f1f1f;
     color: #e0e0e0;
 }
-
 nav.dark-theme ul li a {
     color: #e0e0e0;
 }
-
 .cornerstone-element-wrapper {
     width: 100%;
     max-width: 512px;
-    /* Adjust as needed */
+   /* Adjust as needed */
     aspect-ratio: 1 / 1;
-    /* Ensures a square ratio */
+   /* Ensures a square ratio */
     border: 1px solid black;
-    }
-    
-    .cornerstone-element {
+}
+.cornerstone-element {
     width: 100%;
     height: 100%;
-    }
-    
-    #croppedDicomElement {
+}
+#croppedDicomElement {
     width: 512px;
     height: 512px;
-    border: 2px solid #00ff00;
+    margin: -1px;
+    border: 1px solid #00ff00;
     margin-top: 20px;
-    }
-    
-    #downloadButton {
+}
+#downloadButton {
     background-color: #4CAF50;
-    /* Green */
+   /* Green */
     color: white;
     padding: 10px 20px;
     border: none;
@@ -101,34 +197,28 @@ nav.dark-theme ul li a {
     cursor: pointer;
     margin-top: 10px;
     transition: background-color 0.3s;
-    }
-    
-    #downloadButton:hover {
+}
+#downloadButton:hover {
     background-color: #45a049;
-    }
-    
-    #downloadButton:disabled {
+}
+#downloadButton:disabled {
     background-color: #cccccc;
     cursor: not-allowed;
-    }
-    
-    /* Style for the options section */
-    .options-section {
+}
+/* Style for the options section */
+.options-section {
     margin-top: 15px;
     margin-bottom: 15px;
-    }
-    
-    .options-section label {
+}
+.options-section label {
     margin-right: 15px;
     display: inline-flex;
     align-items: center;
-    }
-    
-    .options-section input[type="checkbox"] {
+}
+.options-section input[type="checkbox"] {
     margin-right: 5px;
-    }
-    
-    /* Better styling for button area */
-    .action-buttons {
+}
+/* Better styling for button area */
+.action-buttons {
     margin-top: 15px;
-    }
+}

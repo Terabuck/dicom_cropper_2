@@ -15,7 +15,7 @@
     <link rel="mask-icon" href="/static/safari-pinned-tab.svg" color="#5bbad5" />
     <meta name="msapplication-TileColor" content="#da532c" />
     <meta name="theme-color" content="#ffffff" />
-    <style></style>
+    <link rel="stylesheet" href="/static/styles/styles.css">
     <!-- Local versions of libraries -->
     <script src="/static/assets/hammer.js"></script>
     <script src="/static/assets/dicom-parser.js"></script>
@@ -23,131 +23,15 @@
     <script src="/static/assets/cornerstone-math.js"></script>
     <script src="/static/assets/cornerstone-wado-image-loader.js"></script>
     <script src="/static/assets/cornerstone-tools.js"></script>
-    <style>
-      body {
-        font-family: Arial, sans-serif;
-        margin: 0;
-        padding: 5px;
-        display: grid;
-      }
-
-      .tool-selection {
-        margin-top: 5px;
-        margin-bottom: 5px;
-      }
-
-      .cornerstone-element-wrapper {
-        width: 100%;
-        /* Adjust as needed */
-        aspect-ratio: 1 / 1;
-        /* Ensures a square ratio */
-        border: 1px solid black;
-      }
-
-      /* New styles for side-by-side layout */
-      .dicom-container {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        /* Use flexbox for side-by-side layout */
-        gap: 3px;
-        /* Add some space between the elements */
-        width: fit-content;
-        justify-content: center;
-        align-items: center;
-      }
-
-      .cornerstone-element,
-      #croppedDicomElement {
-        width: 420px;
-        height: 420px;
-      }
-
-      #croppedDicomElement {
-        border: 1px solid #00ff00;
-      }
-
-      .menu-container {
-          border: 1px black;
-        width: 849px;
-   
-          background-color: grey;
-          padding: 1px;
-        }
-
-      @media (orientation: portrait) {
-        .dicom-container {
-          grid-template-columns: 1fr;
-        }
-        .menu-container {
-        width: 423px;
-      }
-      }
-
-      @media (max-width: 768px) {
-        dicom-container {
-          grid-template-columns: 1fr;
-        }
-
-           }
-
-      #downloadButton {
-        background-color: #4CAF50;
-        /* Green */
-        color: white;
-        padding: 10px 20px;
-        border: none;
-        border-radius: 4px;
-        cursor: pointer;
-        margin-top: 10px;
-        transition: background-color 0.3s;
-        position: relative;
-      }
-
-      #downloadButton:hover {
-        background-color: #45a049;
-      }
-
-      #downloadButton:disabled {
-        background-color: #cccccc;
-        cursor: not-allowed;
-      }
-
-      button {
-      background-color: darkgray;
-      style="margin-top: 10px; 
-      color: white; 
-      padding: 10px 20px; 
-      border: none; 
-      border-radius: 4px;
-      margin: 4px;
-      width: 200px;
-      }
-
-      /* Style for the options section */
-      .options-section {
-        margin-top: 5px;
-        margin-bottom: 5px;
-      }
-
-      .options-section label {
-        margin-right: 15px;
-        display: inline-flex;
-        align-items: center;
-      }
-
-      .options-section input[type="checkbox"] {
-        margin-right: 5px;
-      }
-
-    </style>
+    <script src="/static/assets/main.js"></script>
   </head>
   <body>
-    <h2>DICOM Editor</h2>
     <main class="page-content" aria-label="Content">
       <div class="wrapper">
         <section class="section">
           <div class="container">
             <div class="menu-container">
+              <h2>DICOM Editor</h2>
               <!-- Tool Selection Radio Buttons -->
               <div class="tool-selection">
                 <label>
@@ -170,7 +54,7 @@
               
             </div>
               <!-- Download Button -->
-              <button id="downloadButton" style="display: none; margin-top: 10px; background-color: #4CAF50; color: white; padding: 10px 20px; border: none; border-radius: 4px;" onclick="handleDownload()"> Download Cropped Image </button>
+              <button id="downloadButton" style="display: none; margin-top: 10px; background-color: #4CAF50; color: white; padding: 10px 20px; border: none; border-radius: 4px;" onclick="handleDownload()"> Download Image </button>
               <script>
                 window.addEventListener('resize', function() {
                   // Check if the orientation has changed
@@ -480,7 +364,7 @@
       });
     </script>
     <!-- Add this after the cropped DICOM element -->
-    <button id="downloadButton" style="display: none; margin-top: 10px; background-color: #4CAF50; color: white; padding: 10px 20px; border: none; border-radius: 4px;" onclick="handleDownload()"> Download Cropped Image </button>
+    <button id="downloadButton" style="display: none; margin-top: 10px; background-color: #4CAF50; color: white; padding: 10px 20px; border: none; border-radius: 4px;" onclick="handleDownload()"> Download Image </button>
     <script>
       // Add these functions
       let currentCroppedUrl = null;
