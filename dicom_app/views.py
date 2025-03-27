@@ -420,15 +420,10 @@ def crop_dicom(request):
             try:
                 ds = pydicom.dcmread(original_dicom_path)
                 dicom_info = get_dicom_info(ds)
-                # begin center tryout
-                pixel_array = ds.pixel_array
-                original_rows = ds.Rows
-                original_columns = ds.Columns
-                # end center tryout
                 logger.info(f"Original DICOM info: {dicom_info}")
                 
                 # Try to access pixel data
-                pixel_array = ds.pixel_array
+                pixel_array = ds.pixel_array.copy() 
                 logger.info(f"Pixel array loaded successfully: shape={pixel_array.shape}, dtype={pixel_array.dtype}")
                 
                 # Store which pixel handler was used
@@ -476,76 +471,60 @@ def crop_dicom(request):
             pixel_min, pixel_max = np.min(pixel_array), np.max(pixel_array)
             logger.info(f"Pixel value range: {pixel_min} to {pixel_max}")
             
-            mask_value = np.max(pixel_array)
+            max_pixel_value = np.max(pixel_array)
             
             if selection_type == 'rect':
                 # Handle rectangle
                 if 'x1' not in data or 'y1' not in data or 'x2' not in data or 'y2' not in data:
                     logger.error("Missing rectangle coordinates in request")
                     return JsonResponse({'error': 'Missing rectangle coordinates'}, status=400)
+
+                # Set mask value based on color choice
+                mask_value = 0 if mask_color == 'black' else np.max(pixel_array)
                 
+                # Get original dimensions
+                original_rows = ds.Rows
+                original_columns = ds.Columns
+
+                # Validate and clamp coordinates
                 x1 = max(0, int(data['x1']))
                 y1 = max(0, int(data['y1']))
-                x2 = min(int(data['x2']), ds.Columns)
-                y2 = min(int(data['y2']), ds.Rows)
+                x2 = min(int(data['x2']), original_columns)
+                y2 = min(int(data['y2']), original_rows)
 
-                                # Apply mask to the OUTSIDE of the rectangle
-                if mask_color == 'black':
-                    logger.info("Applying black mask outside rectangle")
-                    mask_value = 0                    
-                else:
-                    logger.info("Applying white mask outside rectangle")
-                    # Set everything outside the rectangle to white (max value)
+                # Calculate selected region dimensions
+                selected_height = y2 - y1
+                selected_width = x2 - x1
 
-                # begin center tryout
-                # Calculate cropped dimensions
-                cropped_height = y2 - y1
-                cropped_width = x2 - x1
+                # Create new array filled with mask value
+                masked_array = np.full((original_rows, original_columns), mask_value, dtype=pixel_array.dtype)
 
-                # Create mask array filled with background value (0)
-                masked_array = np.zeros((ds.Rows, ds.Columns), dtype=pixel_array.dtype)
-                
-                # Calculate centered coordinates
-                start_y = (ds.Rows - cropped_height) // 2
-                start_x = (ds.Columns - cropped_width) // 2
+                # Calculate centered position for the selected region
+                start_y = (original_rows - selected_height) // 2
+                start_x = (original_columns - selected_width) // 2
+                end_y = start_y + selected_height
+                end_x = start_x + selected_width
 
-                # Ensure coordinates stay within bounds
+                # Ensure bounds
                 start_y = max(0, start_y)
                 start_x = max(0, start_x)
-                end_y = min(start_y + cropped_height, ds.Rows)
-                end_x = min(start_x + cropped_width, ds.Columns)
+                end_y = min(end_y, original_rows)
+                end_x = min(end_x, original_columns)
 
-                # Adjust cropped region if needed (in case of odd dimensions)
-                adjusted_height = end_y - start_y
-                adjusted_width = end_x - start_x
+                # Extract selected region from original image
+                selected_region = pixel_array[y1:y2, x1:x2]
+                
+                # Calculate actual available space for insertion
+                insert_height = end_y - start_y
+                insert_width = end_x - start_x
 
-                # Place cropped region in center
-                masked_array[start_y:end_y, start_x:end_x] = pixel_array[
-                    y1:y1+adjusted_height, 
-                    x1:x1+adjusted_width
-                ]
-                
-                # end center tryout
+                # Insert selected region into centered position
+                masked_array[start_y:start_y+insert_height, start_x:start_x+insert_width] = \
+                    selected_region[:insert_height, :insert_width]
 
-                logger.info(f"Rectangle coordinates: ({x1}, {y1}) to ({x2}, {y2})")
-                
-                # Create a copy of the pixel array to modify
-                masked_array = pixel_array.copy()
-                logger.info(f"Created copy of pixel array for masking")
-                
-                # Top portion
-                if start_y > 0:
-                    masked_array[0:start_y, :] = mask_value
-                # Bottom portion
-                if end_y < ds.Rows:
-                    masked_array[end_y:, :] = mask_value
-                # Left portion (within the height of the rectangle)
-                if x1 > 0:
-                    masked_array[:, 0:start_x] = mask_value
-                # Right portion (within the height of the rectangle)
-                if end_x < ds.Columns:
-                    masked_array[:, end_x:] = mask_value
-                
+                # Update DICOM data
+                ds.PixelData = masked_array.tobytes()
+                            
             else:
                 # Handle polygon
                 if 'points' not in data or len(data['points']) < 3:
